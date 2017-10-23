@@ -1,6 +1,6 @@
 # ttar: a simple archiving utility
 
-`ttar` is a plain text archiving utility in the vein of `tar(1)` and inspired by by https://github.com/jtvaughan/ptar, but written in bash.
+`ttar` is a plain text archiving utility in the vein of `tar(1)` and inspired by [ptar](https://github.com/jtvaughan/ptar), but written in bash.
 
 ## Use case
 
