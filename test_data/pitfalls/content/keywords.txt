@@ -1,0 +1,4 @@
+These lines should be preserved although they contain ttar format keywords.
+Path: NOT_A_PATH
+Lines: NOT_LINES
+Mode: NOT_MODE
