@@ -39,6 +39,7 @@ Usage:   $bname [-C <DIR>] -c -f <ARCHIVE> <FILE...> (create archive)
 
 Options:
          -C <DIR>                                    (change directory)
+         -v                                          (verbose)
 
 Example: Change to sysfs directory, create ttar file from fixtures directory
          $bname -C sysfs -c -f sysfs/fixtures.ttar fixtures/
@@ -60,6 +61,8 @@ function set_cmd {
     fi
     CMD=$1
 }
+
+unset VERBOSE
 
 while getopts :cf:htxvC: opt; do
     case $opt in
