@@ -5,6 +5,12 @@ set -o errexit -o nounset
 chmod 400 test_data/pitfalls/permissions/400
 chmod 700 test_data/pitfalls/permissions
 
+ln_test=test_data/pitfalls/symlinks/ln1.txt
+
+if diff --no-dereference "$ln_test" "$ln_test" 2>/dev/null; then
+    DIFF_OPTS="--no-dereference"
+fi
+
 function test_dir {
     local name=$1
     echo "Checking $name."
@@ -23,7 +29,13 @@ function test_dir {
     echo "  Restoring archive."
     ./ttar -x -f $name.ttar
     echo "    Comparing to original."
-    diff -ru --no-dereference test_data/$name $name
+    rc=0
+    diff -ru ${DIFF_OPTS:-} test_data/$name $name || rc=$?
+    if [ -n "${DIFF_OPTS:-}" -a $rc -ne 0 ]; then
+      # If we have --no-dereference, errors are unexpected.
+      echo "ERROR $name and test_date/$name differ. Aborting."
+      exit 3
+    fi
     echo "    Cleaning up."
     rm -rf $name.ttar $name
 }
