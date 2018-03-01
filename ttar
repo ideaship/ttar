@@ -30,6 +30,55 @@ path=""
 CMD=""
 ARG_STRING="$@"
 
+#------------------------------------------------------------------------------
+# Not all sed implementations can work on null bytes. In order to make ttar
+# work out of the box on macOS, use Python as a stream editor.
+
+USE_PYTHON=0
+
+PYTHON_CREATE_FILTER=$(cat << 'PCF'
+#!/usr/bin/env python
+
+import re
+import sys
+
+for line in sys.stdin:
+    line = re.sub(r'EOF', r'\EOF', line)
+    line = re.sub(r'NULLBYTE', r'\NULLBYTE', line)
+    line = re.sub('\x00', r'NULLBYTE', line)
+    sys.stdout.write(line)
+PCF
+)
+
+PYTHON_EXTRACT_FILTER=$(cat << 'PEF'
+#!/usr/bin/env python
+
+import re
+import sys
+
+for line in sys.stdin:
+    line = re.sub(r'^NULLBYTE', '\x00', line)
+    line = re.sub(r'([^\\])NULLBYTE', '\\1\x00', line)
+    line = re.sub(r'\\NULLBYTE', 'NULLBYTE', line)
+    line = re.sub(r'([^\\])EOF', r'\1', line)
+    line = re.sub(r'\\EOF', 'EOF', line)
+    sys.stdout.write(line)
+PEF
+)
+
+function test_environment {
+    if [[ "$(echo "a" | sed 's/a/\x0/' | wc -c)" -ne 2 ]]; then
+        echo "WARNING sed unable to handle null bytes, using Python (slow)."
+        if ! which python >/dev/null; then
+            echo "ERROR Python not found. Aborting."
+            exit 2
+        fi
+        USE_PYTHON=1
+    fi
+}
+
+#------------------------------------------------------------------------------
+
 function usage {
     bname=$(basename "$0")
     cat << USAGE
@@ -175,13 +224,17 @@ function extract {
             # Remove one backslash in front of NULLBYTE (if any)
             # Remove EOF unless preceeded by backslash
             # Remove one backslash in front of EOF
-            echo -n "$line" | \
-                sed 's/^NULLBYTE/\x0/g' | \
-                sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
-                sed 's/\\NULLBYTE/NULLBYTE/g' | \
-                sed 's/\([^\\]\)EOF/\1/g' | \
-                sed 's/\\EOF/EOF/g' \
-                >> "$path"
+            if [ $USE_PYTHON -eq 1 ]; then
+                echo -n "$line" | python -c "$PYTHON_EXTRACT_FILTER" >> "$path"
+            else
+                echo -n "$line" | \
+                    sed 's/^NULLBYTE/\x0/g' | \
+                    sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
+                    sed 's/\\NULLBYTE/NULLBYTE/g' | \
+                    sed 's/\([^\\]\)EOF/\1/g' | \
+                    sed 's/\\EOF/EOF/g' \
+                    >> "$path"
+            fi
             if [[ "$eof_without_newline" -eq 0 ]]; then
                 echo >> "$path"
             fi
@@ -275,10 +328,14 @@ function _create {
             # Add backslash in front of EOF
             # Add backslash in front of NULLBYTE
             # Replace null byte with NULLBYTE
-            cat "$file" | \
-                sed 's/EOF/\\EOF/g' | \
-                sed 's/NULLBYTE/\\NULLBYTE/g' | \
-                sed 's/\x0/NULLBYTE/g'
+            if [ $USE_PYTHON -eq 1 ]; then
+                cat "$file" | python -c "$PYTHON_CREATE_FILTER"
+            else
+                cat "$file" | \
+                    sed 's/EOF/\\EOF/g' | \
+                    sed 's/NULLBYTE/\\NULLBYTE/g' | \
+                    sed 's/\x0/NULLBYTE/g'
+            fi
             if [[ "$eof_without_newline" -eq 1 ]]; then
                 # Finish line with EOF to indicate that the original line did
                 # not end with a linefeed
@@ -311,6 +368,8 @@ function create {
     echo "# Archive created by ttar $ARG_STRING"
     _create "$@"
 }
+
+test_environment
 
 if [ -n "${CDIR:-}" ]; then
     if [[ "$ARCHIVE" != /* ]]; then
