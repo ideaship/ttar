@@ -1,6 +1,10 @@
 #!/bin/sh
 set -o errexit -o nounset
 
+# Fix permissions that are not preserved by git
+chmod 400 test_data/pitfalls/permissions/400
+chmod 700 test_data/pitfalls/permissions
+
 function test_dir {
     local name=$1
     echo "Checking $name."
