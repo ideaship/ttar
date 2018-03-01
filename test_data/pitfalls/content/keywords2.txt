@@ -1,0 +1,6 @@
+These lines should be preserved although they contain ttar format keywords.
+End of file marker: EOF
+Escaped end of file marker: \\\EOF \EOF\\EOF
+Null byte marker: NULLBYTE
+NULLBYTEEOF
+EOF

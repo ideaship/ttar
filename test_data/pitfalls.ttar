@@ -259,6 +259,34 @@ Lines: NOT_LINES
 Mode: NOT_MODE
 Mode: 644
 # ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Path: pitfalls/content/keywords2.txt
+Lines: 6
+These lines should be preserved although they contain ttar format keywords.
+End of file marker: \EOF
+Escaped end of file marker: \\\\EOF \\EOF\\\EOF
+Null byte marker: \NULLBYTE
+\NULLBYTE\EOF
+\EOF
+Mode: 644
+# ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Path: pitfalls/content/no_eol.txt
+Lines: 1
+no eolEOF
+Mode: 644
+# ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Path: pitfalls/content/null_bytes.txt
+Lines: 1
+abcNULLBYTEdef
+Mode: 644
+# ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Path: pitfalls/content/null_bytes_2.txt
+Lines: 4
+abcNULLBYTEdef
+NULLBYTE
+ghi
+NULLBYTE
+Mode: 644
+# ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Path: pitfalls/content/utf8.txt
 Lines: 1
 äöü

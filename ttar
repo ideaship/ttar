@@ -161,11 +161,29 @@ function extract {
     fi
     while IFS= read -r line; do
         line_no=$(( line_no + 1 ))
+        local eof_without_newline
         if [ "$size" -gt 0 ]; then
-            if [[ "$line" == *EOF ]]; then
-                printf "$line" | sed 's/NULLBYTE/\x00/g' | sed 's/EOF$//' >> "$path"
+            if [[ "$line" =~ [^\\]EOF ]]; then
+                # An EOF not preceeded by a backslash indicates that the line
+                # does not end with a newline
+                eof_without_newline=1
             else
-                echo "$line"  | sed 's/NULLBYTE/\x00/g' >> "$path"
+                eof_without_newline=0
+            fi
+            # Replace NULLBYTE with null byte if at beginning of line
+            # Replace NULLBYTE with null byte unless preceeded by backslash
+            # Remove one backslash in front of NULLBYTE (if any)
+            # Remove EOF unless preceeded by backslash
+            # Remove one backslash in front of EOF
+            echo -n "$line" | \
+                sed 's/^NULLBYTE/\x0/g' | \
+                sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
+                sed 's/\\NULLBYTE/NULLBYTE/g' | \
+                sed 's/\([^\\]\)EOF/\1/g' | \
+                sed 's/\\EOF/EOF/g' \
+                >> "$path"
+            if [[ "$eof_without_newline" -eq 0 ]]; then
+                echo >> "$path"
             fi
             size=$(( size - 1 ))
             continue
@@ -245,20 +263,25 @@ function _create {
                 _create "$x"
             done
         elif [ -f "$file" ]; then
-            if grep -q -e NULLBYTE -e EOF "$file"; then
-                echo >&2 "ERROR: $file contains special keywords NULLBYTE or EOF which is currently not supported."
-                exit 2
-            fi
             echo "Path: $file"
-            lines=$(wc -l "$file" | cut -d\  -f1)
+            lines=$(wc -l "$file"|awk '{print $1}')
             eof_without_newline=0
-            if [[ "$(wc -c "$file" | cut -d\  -f1)" -gt 0 ]] && [[ "$(tail -c 1 "$file" | wc -l)" -eq 0 ]]; then
+            if [[ "$(wc -c "$file"|awk '{print $1}')" -gt 0 ]] && \
+                    [[ "$(tail -c 1 "$file" | wc -l)" -eq 0 ]]; then
                 eof_without_newline=1
                 lines=$((lines+1))
             fi
             echo "Lines: $lines"
-            cat "$file" | sed 's/\x0/NULLBYTE/g'
+            # Add backslash in front of EOF
+            # Add backslash in front of NULLBYTE
+            # Replace null byte with NULLBYTE
+            cat "$file" | \
+                sed 's/EOF/\\EOF/g' | \
+                sed 's/NULLBYTE/\\NULLBYTE/g' | \
+                sed 's/\x0/NULLBYTE/g'
             if [[ "$eof_without_newline" -eq 1 ]]; then
+                # Finish line with EOF to indicate that the original line did
+                # not end with a linefeed
                 echo "EOF"
             fi
             mode=$(get_mode "$file")
