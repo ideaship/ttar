@@ -240,6 +240,13 @@ Box drawing alignment tests:                                          █
                                                ▝▀▘▙▄▟
 Mode: 644
 # ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Path: pitfalls/content/dos_file.txt
+Lines: 3
+this file
+uses DOS-style
+CR/LF line endings.
+Mode: 644
+# ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Path: pitfalls/content/empty_file
 Lines: 0
 Mode: 644
