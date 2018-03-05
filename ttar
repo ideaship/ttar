@@ -28,7 +28,7 @@ export LC_ALL=C
 
 path=""
 CMD=""
-ARG_STRING="$@"
+ARG_STRING="$*"
 
 #------------------------------------------------------------------------------
 # Not all sed implementations can work on null bytes. In order to make ttar
@@ -329,9 +329,9 @@ function _create {
             # Add backslash in front of NULLBYTE
             # Replace null byte with NULLBYTE
             if [ $USE_PYTHON -eq 1 ]; then
-                cat "$file" | python -c "$PYTHON_CREATE_FILTER"
+                < "$file" python -c "$PYTHON_CREATE_FILTER"
             else
-                cat "$file" | \
+                < "$file" \
                     sed 's/EOF/\\EOF/g' | \
                     sed 's/NULLBYTE/\\NULLBYTE/g' | \
                     sed 's/\x0/NULLBYTE/g'
