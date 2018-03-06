@@ -588,10 +588,12 @@ abcNULLBYTEdef
 Mode: 644
 # ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Path: pitfalls/content/null_bytes_2.txt
-Lines: 4
+Lines: 6
 abcNULLBYTEdef
-NULLBYTE
-ghi
+2NNULLBYTENULLBYTE
+3NNULLBYTENULLBYTENULLBYTE
+5NNULLBYTENULLBYTENULLBYTENULLBYTENULLBYTE
+MNULLBYTE\NULLBYTENULLBYTE\\NULLBYTENULLBYTE
 NULLBYTE
 Mode: 644
 # ttar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

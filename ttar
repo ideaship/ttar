@@ -57,8 +57,7 @@ import re
 import sys
 
 for line in sys.stdin:
-    line = re.sub(r'^NULLBYTE', '\x00', line)
-    line = re.sub(r'([^\\])NULLBYTE', '\\1\x00', line)
+    line = re.sub(r'(?<!\\)NULLBYTE', '\x00', line)
     line = re.sub(r'\\NULLBYTE', 'NULLBYTE', line)
     line = re.sub(r'([^\\])EOF', r'\1', line)
     line = re.sub(r'\\EOF', 'EOF', line)
@@ -227,8 +226,11 @@ function extract {
             if [ $USE_PYTHON -eq 1 ]; then
                 echo -n "$line" | python -c "$PYTHON_EXTRACT_FILTER" >> "$path"
             else
+                # The repeated pattern makes up for sed's lack of negative
+                # lookbehind assertions (for consecutive null bytes).
                 echo -n "$line" | \
                     sed 's/^NULLBYTE/\x0/g' | \
+                    sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
                     sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
                     sed 's/\\NULLBYTE/NULLBYTE/g' | \
                     sed 's/\([^\\]\)EOF/\1/g' | \
