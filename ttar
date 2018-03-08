@@ -283,11 +283,14 @@ function get_mode {
     local mfile=$1
     if [ -z "${STAT_OPTION:-}" ]; then
         if stat -c '%a' "$mfile" >/dev/null 2>&1; then
+            # GNU stat
             STAT_OPTION='-c'
             STAT_FORMAT='%a'
         else
+            # BSD stat
             STAT_OPTION='-f'
-            STAT_FORMAT='%A'
+            # Octal output, user/group/other (omit file type, sticky bit)
+            STAT_FORMAT='%OLp'
         fi
     fi
     stat "${STAT_OPTION}" "${STAT_FORMAT}" "$mfile"
