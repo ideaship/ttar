@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -o errexit -o nounset
 
 # Fix permissions that are not preserved by git
