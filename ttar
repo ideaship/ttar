@@ -229,13 +229,13 @@ function extract {
                 # The repeated pattern makes up for sed's lack of negative
                 # lookbehind assertions (for consecutive null bytes).
                 echo -n "$line" | \
-                    sed 's/^NULLBYTE/\x0/g' | \
-                    sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
-                    sed 's/\([^\\]\)NULLBYTE/\1\x0/g' | \
-                    sed 's/\\NULLBYTE/NULLBYTE/g' | \
-                    sed 's/\([^\\]\)EOF/\1/g' | \
-                    sed 's/\\EOF/EOF/g' \
-                    >> "$path"
+                    sed -e 's/^NULLBYTE/\x0/g;
+                            s/\([^\\]\)NULLBYTE/\1\x0/g;
+                            s/\([^\\]\)NULLBYTE/\1\x0/g;
+                            s/\\NULLBYTE/NULLBYTE/g;
+                            s/\([^\\]\)EOF/\1/g;
+                            s/\\EOF/EOF/g;
+                    ' >> "$path"
             fi
             if [[ "$eof_without_newline" -eq 0 ]]; then
                 echo >> "$path"
@@ -337,9 +337,10 @@ function _create {
                 < "$file" python -c "$PYTHON_CREATE_FILTER"
             else
                 < "$file" \
-                    sed 's/EOF/\\EOF/g' | \
-                    sed 's/NULLBYTE/\\NULLBYTE/g' | \
-                    sed 's/\x0/NULLBYTE/g'
+                    sed 's/EOF/\\EOF/g;
+                         s/NULLBYTE/\\NULLBYTE/g;
+                         s/\x0/NULLBYTE/g;
+                    '
             fi
             if [[ "$eof_without_newline" -eq 1 ]]; then
                 # Finish line with EOF to indicate that the original line did
