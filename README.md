@@ -14,7 +14,7 @@ Using a plain text archive makes it possible to review changes without downloadi
 
 The code is written in bash, because bash is available out of the box on all major flavors of Linux and on macOS. The feature set used is restricted to bash version 3.2 because that is what Apple is still shipping. The Python code has been tested with Python 2.7.10.
 
-The programm also works on Windows if bash is installed. Obviously, it does not solve the Windows limitations (path length limited to 260 characters, character set restrictions, no symbolic links) that prompted the move to an archive format in the first place.
+The program also works on Windows if bash is installed. Obviously, it does not solve the Windows limitations (path length limited to 260 characters, character set restrictions, no symbolic links) that prompted the move to an archive format in the first place.
 
 ## Supported input and limitations
 
