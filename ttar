@@ -86,8 +86,10 @@ Usage:   $bname [-C <DIR>] -c -f <ARCHIVE> <FILE...> (create archive)
          $bname [-C <DIR>] -x -f <ARCHIVE>           (extract archive)
 
 Options:
-         -C <DIR>                                    (change directory)
-         -v                                          (verbose)
+         -C <DIR>           (change directory)
+         -v                 (verbose)
+         --recursive-unlink (recursively delete existing directory if path
+                             collides with file or directory to extract)
 
 Example: Change to sysfs directory, create ttar file from fixtures directory
          $bname -C sysfs -c -f sysfs/fixtures.ttar fixtures/
@@ -111,8 +113,9 @@ function set_cmd {
 }
 
 unset VERBOSE
+unset RECURSIVE_UNLINK
 
-while getopts :cf:htxvC: opt; do
+while getopts :cf:-:htxvC: opt; do
     case $opt in
         c)
             set_cmd "create"
@@ -135,6 +138,18 @@ while getopts :cf:htxvC: opt; do
             ;;
         C)
             CDIR=$OPTARG
+            ;;
+        -)
+            case $OPTARG in
+                recursive-unlink)
+                    RECURSIVE_UNLINK="yes"
+                    ;;
+                *)
+                    echo -e "Error: invalid option -$OPTARG"
+                    echo
+                    usage 1
+                    ;;
+            esac
             ;;
         *)
             echo >&2 "ERROR: invalid option -$OPTARG"
@@ -248,8 +263,12 @@ function extract {
             if [ -L "$path" ]; then
                 rm "$path"
             elif [ -d "$path" ]; then
-                # Safe because symlinks to directories are dealt with above
-                rmdir "$path"
+                if [ "${RECURSIVE_UNLINK:-}" == "yes" ]; then
+                    rm -r "$path"
+                else
+                    # Safe because symlinks to directories are dealt with above
+                    rmdir "$path"
+                fi
             elif [ -e "$path" ]; then
                 rm "$path"
             fi
