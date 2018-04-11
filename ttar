@@ -343,8 +343,8 @@ function _create {
             else
                 < "$file" \
                     sed 's/EOF/\\EOF/g;
-                         s/NULLBYTE/\\NULLBYTE/g;
-                         s/\x0/NULLBYTE/g;
+                            s/NULLBYTE/\\NULLBYTE/g;
+                            s/\x0/NULLBYTE/g;
                     '
             fi
             if [[ "$eof_without_newline" -eq 1 ]]; then
