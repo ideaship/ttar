@@ -245,9 +245,12 @@ function extract {
         fi
         if [[ $line =~ ^Path:\ (.*)$ ]]; then
             path=${BASH_REMATCH[1]}
-            if [ -d "$path" ]; then
-                rm -r "$path"
-            elif [ -e "$path" ] || [ -L "$path" ]; then
+            if [ -L "$path" ]; then
+                rm "$path"
+            elif [ -d "$path" ]; then
+                # Safe because symlinks to directories are dealt with above
+                rmdir "$path"
+            elif [ -e "$path" ]; then
                 rm "$path"
             fi
         elif [[ $line =~ ^Lines:\ (.*)$ ]]; then
