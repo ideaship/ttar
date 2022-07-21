@@ -30,6 +30,8 @@ path=""
 CMD=""
 ARG_STRING="$*"
 
+PYTHON=${PYTHON:-python}
+
 #------------------------------------------------------------------------------
 # Not all sed implementations can work on null bytes. In order to make ttar
 # work out of the box on macOS, use Python as a stream editor.
@@ -37,8 +39,6 @@ ARG_STRING="$*"
 USE_PYTHON=0
 
 PYTHON_CREATE_FILTER=$(cat << 'PCF'
-#!/usr/bin/env python
-
 import re
 import sys
 
@@ -51,8 +51,6 @@ PCF
 )
 
 PYTHON_EXTRACT_FILTER=$(cat << 'PEF'
-#!/usr/bin/env python
-
 import re
 import sys
 
@@ -239,7 +237,7 @@ function extract {
             # Remove EOF unless preceded by backslash
             # Remove one backslash in front of EOF
             if [ $USE_PYTHON -eq 1 ]; then
-                echo -n "$line" | python -c "$PYTHON_EXTRACT_FILTER" >> "$path"
+                echo -n "$line" | $PYTHON -c "$PYTHON_EXTRACT_FILTER" >> "$path"
             else
                 # The repeated pattern makes up for sed's lack of negative
                 # lookbehind assertions (for consecutive null bytes).
@@ -358,7 +356,7 @@ function _create {
             # Add backslash in front of NULLBYTE
             # Replace null byte with NULLBYTE
             if [ $USE_PYTHON -eq 1 ]; then
-                < "$file" python -c "$PYTHON_CREATE_FILTER"
+                < "$file" $PYTHON -c "$PYTHON_CREATE_FILTER"
             else
                 < "$file" \
                     sed 's/EOF/\\EOF/g;
