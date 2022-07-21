@@ -43,8 +43,8 @@ import re
 import sys
 
 for line in sys.stdin:
-    line = re.sub(r'EOF', r'\EOF', line)
-    line = re.sub(r'NULLBYTE', r'\NULLBYTE', line)
+    line = re.sub(r'EOF', r'\\EOF', line)
+    line = re.sub(r'NULLBYTE', r'\\NULLBYTE', line)
     line = re.sub('\x00', r'NULLBYTE', line)
     sys.stdout.write(line)
 PCF
